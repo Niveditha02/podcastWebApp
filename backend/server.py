@@ -64,6 +64,11 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 # Serve uploaded files
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
+# Serve frontend static files (React build)
+frontend_build_path = ROOT_DIR.parent / "frontend" / "build"
+if frontend_build_path.exists():
+    app.mount("/static", StaticFiles(directory=str(frontend_build_path / "static")), name="static")
+
 api_router = APIRouter(prefix="/api")
 
 # ==================== MODELS ====================
@@ -994,3 +999,26 @@ logger = logging.getLogger(__name__)
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+# Serve React SPA - catch-all route for frontend
+from starlette.responses import FileResponse
+from fastapi.exceptions import RequestValidationError
+
+frontend_index_path = ROOT_DIR.parent / "frontend" / "build" / "index.html"
+
+@app.get("/{full_path:path}")
+async def serve_spa(full_path: str):
+    """Serve React SPA - return index.html for all non-API routes"""
+    # Skip API routes
+    if full_path.startswith("api/"):
+        raise HTTPException(status_code=404, detail="Not found")
+    
+    # Skip static files and uploads
+    if full_path.startswith("static/") or full_path.startswith("uploads/"):
+        raise HTTPException(status_code=404, detail="Not found")
+    
+    if frontend_index_path.exists():
+        return FileResponse(frontend_index_path)
+    
+    # Fallback if build doesn't exist (development)
+    return {"message": "Frontend not built. Run 'npm run build' in the frontend directory."}

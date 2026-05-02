@@ -39,7 +39,8 @@ security = HTTPBearer()
 oauth = OAuth()
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
 GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '')
-GOOGLE_REDIRECT_URI = os.environ.get('GOOGLE_REDIRECT_URI', 'http://localhost:8000/api/auth/google/callback')
+DEFAULT_PUBLIC_URL = 'https://podcast-web-app-vqw9.onrender.com'
+GOOGLE_REDIRECT_URI = os.environ.get('GOOGLE_REDIRECT_URI', f'{DEFAULT_PUBLIC_URL}/api/auth/google/callback')
 
 if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
     oauth.register(
@@ -248,7 +249,7 @@ async def google_callback(request: Request):
     from starlette.responses import RedirectResponse
     import urllib.parse
     
-    frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+    frontend_url = os.environ.get('FRONTEND_URL', DEFAULT_PUBLIC_URL)
     
     try:
         token = await oauth.google.authorize_access_token(request)

@@ -7,7 +7,7 @@ services:
     envVars:
       # Frontend Build Environment Variables
       - key: REACT_APP_BACKEND_URL
-        value: https://podcast-web-app.onrender.com
+        value: https://podcast-web-app-vqw9.onrender.com
       - key: REACT_APP_ENABLE_VISUAL_EDITS
         value: false
       - key: ENABLE_HEALTH_CHECK
@@ -19,11 +19,11 @@ services:
       - key: DB_NAME
         value: podcast_network
       - key: CORS_ORIGINS
-        value: https://podcast-web-app.onrender.com,http://localhost:3000
+        value: https://podcast-web-app-vqw9.onrender.com,http://localhost:3000
       - key: FRONTEND_URL
-        value: https://podcast-web-app.onrender.com
+        value: https://podcast-web-app-vqw9.onrender.com
       - key: GOOGLE_REDIRECT_URI
-        value: https://podcast-web-app.onrender.com/api/auth/google/callback
+        value: https://podcast-web-app-vqw9.onrender.com/api/auth/google/callback
       # Add secrets in Render Dashboard: MONGO_ATLAS_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, SECRET_KEY
     
     autoDeploy: true

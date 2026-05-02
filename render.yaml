@@ -2,10 +2,7 @@ services:
   - type: web
     name: podcast-web-app
     runtime: python
-    buildCommand: |
-      npm install --prefix frontend && \
-      npm run build --prefix frontend && \
-      pip install -r backend/requirements.txt
+    buildCommand: pip install -r backend/requirements.txt
     startCommand: cd backend && uvicorn server:app --host 0.0.0.0 --port $PORT
     envVars:
       # Frontend Build Environment Variables
@@ -19,8 +16,6 @@ services:
       # Backend Runtime Environment Variables
       - key: PYTHONUNBUFFERED
         value: true
-      - key: PORT
-        value: 10000
       - key: DB_NAME
         value: podcast_network
       - key: CORS_ORIGINS

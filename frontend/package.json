@@ -1,0 +1,9 @@
+{
+  "name": "podcast-web-app-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node -e \"require('fs').accessSync('build/index.html'); console.log('Using checked-in frontend/build')\"",
+    "start": "node -e \"console.log('Frontend is served by the FastAPI backend from frontend/build')\""
+  }
+}

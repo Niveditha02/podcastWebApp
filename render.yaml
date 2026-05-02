@@ -1,14 +1,36 @@
 services:
   - type: web
-    name: podcast-web-app-backend
+    name: podcast-web-app
     runtime: python
-    buildCommand: npm install --prefix frontend && npm run build --prefix frontend && pip install -r backend/requirements.txt
+    buildCommand: |
+      npm install --prefix frontend && \
+      npm run build --prefix frontend && \
+      pip install -r backend/requirements.txt
     startCommand: cd backend && uvicorn server:app --host 0.0.0.0 --port $PORT
     envVars:
+      # Frontend Build Environment Variables
+      - key: REACT_APP_BACKEND_URL
+        value: https://podcast-web-app.onrender.com
+      - key: REACT_APP_ENABLE_VISUAL_EDITS
+        value: false
+      - key: ENABLE_HEALTH_CHECK
+        value: false
+      
+      # Backend Runtime Environment Variables
       - key: PYTHONUNBUFFERED
         value: true
       - key: PORT
         value: 10000
+      - key: DB_NAME
+        value: podcast_network
+      - key: CORS_ORIGINS
+        value: https://podcast-web-app.onrender.com,http://localhost:3000
+      - key: FRONTEND_URL
+        value: https://podcast-web-app.onrender.com
+      - key: GOOGLE_REDIRECT_URI
+        value: https://podcast-web-app.onrender.com/api/auth/google/callback
+      # Add secrets in Render Dashboard: MONGO_ATLAS_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, SECRET_KEY
+    
     autoDeploy: true
     rootDir: .
     region: oregon

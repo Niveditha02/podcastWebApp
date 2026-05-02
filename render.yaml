@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: podcast-web-app-backend
+    runtime: python
+    pythonVersion: 3.11
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && uvicorn server:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+      - key: PORT
+        value: 10000
+      - key: PYTHONUNBUFFERED
+        value: true
+    autoDeploy: true
+    rootDir: .
+    region: oregon
+    plan: free
+
+  - type: static_site
+    name: podcast-web-app-frontend
+    staticPublishPath: frontend/build
+    buildCommand: npm install --prefix frontend
+    buildFilter:
+      paths:
+        - frontend/**
+    autoDeploy: true
+    region: oregon
+    plan: free
+    headers:
+      - path: /
+        definition:
+          - key: Cache-Control
+            value: no-cache
+
+databases:
+  - name: podcast_db
+    databaseName: podcast_network
+    plan: free
+    region: oregon
+    postgreSQL:
+      version: 15

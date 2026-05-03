@@ -47,8 +47,8 @@ security = HTTPBearer()
 oauth = OAuth()
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
 GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '')
-DEFAULT_PUBLIC_URL = 'http://localhost:3000'
-GOOGLE_REDIRECT_URI = os.environ.get('GOOGLE_REDIRECT_URI', 'http://localhost:8000/api/auth/google/callback')
+DEFAULT_PUBLIC_URL = 'https://podcast-web-app-vqw9.onrender.com'
+GOOGLE_REDIRECT_URI = os.environ.get('GOOGLE_REDIRECT_URI', 'https://podcast-web-app-vqw9.onrender.com/api/auth/google/callback')
 
 if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
     oauth.register(
@@ -273,8 +273,8 @@ async def google_callback(request: Request):
     import json
     import urllib.parse
     
-    # For local development, force the frontend URL to localhost:3000
-    frontend_url = "http://localhost:3000" if not os.environ.get('RENDER') else os.environ.get('FRONTEND_URL', "http://localhost:3000")
+    # For local development, force the frontend URL to the production URL or environment variable
+    frontend_url = "https://podcast-web-app-vqw9.onrender.com" if not os.environ.get('RENDER') else os.environ.get('FRONTEND_URL', "https://podcast-web-app-vqw9.onrender.com")
     
     try:
         token = await oauth.google.authorize_access_token(request)

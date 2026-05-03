@@ -10,6 +10,7 @@ import os
 import logging
 import aiofiles
 import shutil
+import certifi
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing import List, Optional
@@ -31,7 +32,15 @@ if not mongo_url:
             "to your MongoDB Atlas connection string."
         )
     mongo_url = 'mongodb://localhost:27017'
-client = AsyncIOMotorClient(mongo_url)
+
+mongo_client_options = {
+    "serverSelectionTimeoutMS": 10000,
+}
+if "mongodb.net" in mongo_url or mongo_url.startswith("mongodb+srv://"):
+    mongo_client_options["tls"] = True
+    mongo_client_options["tlsCAFile"] = certifi.where()
+
+client = AsyncIOMotorClient(mongo_url, **mongo_client_options)
 db = client[os.environ.get('DB_NAME', 'podcast_network')]
 
 # Security
@@ -301,7 +310,13 @@ async def google_callback(request: Request):
         return RedirectResponse(url=f"{frontend_url}/?token={access_token}&user={user_json}")
     except Exception as e:
         # Redirect to frontend with error
-        error_message = urllib.parse.quote(str(e))
+        error_text = str(e)
+        if "SSL handshake failed" in error_text or "TopologyDescription" in error_text:
+            error_text = (
+                "Database connection failed. Check MONGO_ATLAS_URL, Atlas network "
+                "access, and TLS settings in Render."
+            )
+        error_message = urllib.parse.quote(error_text)
         return RedirectResponse(url=f"{frontend_url}/?error={error_message}")
 
 @api_router.get("/auth/me")

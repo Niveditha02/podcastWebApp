@@ -247,6 +247,7 @@ async def google_login(request: Request):
 @api_router.get("/auth/google/callback")
 async def google_callback(request: Request):
     from starlette.responses import RedirectResponse
+    import json
     import urllib.parse
     
     frontend_url = os.environ.get('FRONTEND_URL', DEFAULT_PUBLIC_URL)
@@ -274,7 +275,11 @@ async def google_callback(request: Request):
         access_token = create_access_token({"sub": user['id'], "email": user['email']})
         
         # Redirect to frontend with token and user info
-        user_json = urllib.parse.quote(f'{{"id":"{user["id"]}","email":"{user["email"]}","name":"{user["name"]}"}}')
+        user_json = urllib.parse.quote(json.dumps({
+            "id": user["id"],
+            "email": user["email"],
+            "name": user["name"]
+        }))
         return RedirectResponse(url=f"{frontend_url}/?token={access_token}&user={user_json}")
     except Exception as e:
         # Redirect to frontend with error

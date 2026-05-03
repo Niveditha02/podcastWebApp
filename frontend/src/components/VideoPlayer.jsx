@@ -41,18 +41,16 @@ const VideoPlayer = ({ videoUrl, title }) => {
   // Don't render if URL is invalid
   if (!youtubeUrl) return null;
 
-  const handlePlayClick = () => {
-    window.open(youtubeUrl, '_blank', 'noopener,noreferrer');
-  };
-
   return (
     <Button 
-      onClick={handlePlayClick} 
+      asChild
       className="play-episode-btn"
       size="sm"
       variant="default"
     >
-      <Play size={16} /> Watch on YouTube
+      <a href={youtubeUrl} target="_blank" rel="noopener noreferrer" aria-label={`Watch ${title} on YouTube`}>
+        <Play size={16} /> Watch on YouTube
+      </a>
     </Button>
   );
 };

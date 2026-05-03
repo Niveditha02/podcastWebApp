@@ -48,7 +48,7 @@ oauth = OAuth()
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
 GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '')
 DEFAULT_PUBLIC_URL = 'http://localhost:3000'
-GOOGLE_REDIRECT_URI = 'http://localhost:8000/api/auth/google/callback'
+GOOGLE_REDIRECT_URI = os.environ.get('GOOGLE_REDIRECT_URI', 'http://localhost:8000/api/auth/google/callback')
 
 if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
     oauth.register(

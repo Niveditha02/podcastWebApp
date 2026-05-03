@@ -24,7 +24,14 @@ services:
         value: https://podcast-web-app-vqw9.onrender.com
       - key: GOOGLE_REDIRECT_URI
         value: https://podcast-web-app-vqw9.onrender.com/api/auth/google/callback
-      # Add secrets in Render Dashboard: MONGO_ATLAS_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, SECRET_KEY
+      - key: MONGO_ATLAS_URL
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
     
     autoDeploy: true
     rootDir: .

@@ -1683,8 +1683,8 @@ html {
 
 .play-episode-btn {
   width: 100%;
-  background: var(--primary);
-  color: white;
+  background: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 6px;
@@ -1698,9 +1698,19 @@ html {
 }
 
 .play-episode-btn:hover {
-  background: var(--primary-dark);
+  background: hsl(160 84% 32%) !important;
+  color: hsl(var(--primary-foreground)) !important;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.play-episode-btn:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+.play-episode-btn svg {
+  color: currentColor;
 }
 
 .video-player-wrapper {

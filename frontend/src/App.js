@@ -41,6 +41,7 @@ const LandingPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    document.title = "PodcastHub";
     const isDark = localStorage.getItem('darkMode') === 'true';
     setDarkMode(isDark);
     document.documentElement.classList.toggle('dark', isDark);
@@ -51,20 +52,26 @@ const LandingPage = () => {
     const userParam = urlParams.get('user');
     const error = urlParams.get('error');
 
+    console.log("OAuth Callback - Token:", token ? "Received" : "Missing");
+    console.log("OAuth Callback - User:", userParam ? "Received" : "Missing");
+    console.log("OAuth Callback - Error:", error);
+
     if (error) {
       toast.error(`Authentication failed: ${decodeURIComponent(error)}`);
-      // Clean URL
       window.history.replaceState({}, document.title, window.location.pathname);
     } else if (token && userParam) {
       try {
         const user = JSON.parse(decodeURIComponent(userParam));
+        console.log("OAuth Success - User Name:", user.name);
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
-        toast.success('Successfully signed in with Google!');
-        // Clean URL and navigate
+        
+        // Instant redirect
         window.history.replaceState({}, document.title, window.location.pathname);
         navigate('/dashboard');
+        toast.success('Successfully signed in with Google!');
       } catch (err) {
+        console.error("OAuth Error parsing user data:", err);
         toast.error('Failed to process authentication data');
         window.history.replaceState({}, document.title, window.location.pathname);
       }
@@ -225,6 +232,13 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log("Dashboard - Initializing...");
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    console.log("Dashboard - Token found:", !!token);
+    console.log("Dashboard - User found:", !!user);
+
+    document.title = "PodcastHub | Dashboard";
     const isDark = localStorage.getItem('darkMode') === 'true';
     setDarkMode(isDark);
     document.documentElement.classList.toggle('dark', isDark);
@@ -232,7 +246,7 @@ const Dashboard = () => {
     if (activeTab === 'overview') {
       fetchPopularData();
     }
-  }, [activeTab]);
+  }, [activeTab, navigate]);
 
   const toggleDarkMode = () => {
     const newMode = !darkMode;
@@ -297,6 +311,7 @@ const Dashboard = () => {
   };
 
   const fetchData = async () => {
+    console.log("Dashboard - Fetching data for tab:", activeTab);
     try {
       if (activeTab === 'overview') {
         // Fetch all data for overview
@@ -306,6 +321,7 @@ const Dashboard = () => {
           axios.get(`${API}/episodes`, getAuthHeaders()),
           axios.get(`${API}/advertisers`, getAuthHeaders())
         ]);
+        console.log("Dashboard - Data fetch success");
         setHosts(hostsRes.data);
         setShows(showsRes.data);
         setEpisodes(episodesRes.data);
@@ -329,7 +345,9 @@ const Dashboard = () => {
         setAdvertisers(data);
       }
     } catch (error) {
+      console.error("Dashboard - Fetch Error:", error.response?.status, error.message);
       if (error.response?.status === 401) {
+        console.log("Dashboard - 401 Unauthorized, clearing storage and redirecting");
         localStorage.clear();
         navigate('/');
       }
@@ -1287,7 +1305,15 @@ const AdvertisersSection = ({ advertisers, onRefresh, onDelete, getAuthHeaders }
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
-  return token ? children : <Navigate to="/" />;
+  const user = localStorage.getItem('user');
+  console.log("ProtectedRoute - Checking access. Token:", !!token, "User:", !!user);
+  
+  if (!token || !user) {
+    console.log("ProtectedRoute - Access denied, redirecting to login");
+    return <Navigate to="/" replace />;
+  }
+  
+  return children;
 };
 
 function App() {

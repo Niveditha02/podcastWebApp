@@ -22,8 +22,15 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 # MongoDB connection
-# Use MONGO_ATLAS_URL if available, otherwise fall back to local MONGO_URL
-mongo_url = os.environ.get('MONGO_ATLAS_URL') or os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+# Render must use MongoDB Atlas or another reachable MongoDB service.
+mongo_url = os.environ.get('MONGO_ATLAS_URL') or os.environ.get('MONGO_URL')
+if not mongo_url:
+    if os.environ.get('RENDER'):
+        raise RuntimeError(
+            "Missing MongoDB connection string. Set MONGO_ATLAS_URL in Render "
+            "to your MongoDB Atlas connection string."
+        )
+    mongo_url = 'mongodb://localhost:27017'
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ.get('DB_NAME', 'podcast_network')]
 
@@ -71,6 +78,17 @@ if frontend_build_path.exists():
     app.mount("/static", StaticFiles(directory=str(frontend_build_path / "static")), name="static")
 
 api_router = APIRouter(prefix="/api")
+
+@api_router.get("/health")
+async def health_check():
+    try:
+        await db.command("ping")
+        return {"status": "ok", "database": "connected"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Database unavailable: {str(e)}"
+        )
 
 # ==================== MODELS ====================
 

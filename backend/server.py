@@ -23,15 +23,7 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 # MongoDB connection
-# Render must use MongoDB Atlas or another reachable MongoDB service.
-mongo_url = os.environ.get('MONGO_ATLAS_URL') or os.environ.get('MONGO_URL')
-if not mongo_url:
-    if os.environ.get('RENDER'):
-        raise RuntimeError(
-            "Missing MongoDB connection string. Set MONGO_ATLAS_URL in Render "
-            "to your MongoDB Atlas connection string."
-        )
-    mongo_url = 'mongodb://localhost:27017'
+mongo_url = os.environ.get('MONGO_ATLAS_URL') or os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 
 mongo_client_options = {
     "serverSelectionTimeoutMS": 10000,
@@ -55,8 +47,8 @@ security = HTTPBearer()
 oauth = OAuth()
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
 GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '')
-DEFAULT_PUBLIC_URL = 'https://podcast-web-app-vqw9.onrender.com'
-GOOGLE_REDIRECT_URI = os.environ.get('GOOGLE_REDIRECT_URI', f'{DEFAULT_PUBLIC_URL}/api/auth/google/callback')
+DEFAULT_PUBLIC_URL = 'http://localhost:3000'
+GOOGLE_REDIRECT_URI = 'http://localhost:8000/api/auth/google/callback'
 
 if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
     oauth.register(
@@ -70,8 +62,8 @@ if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
         }
     )
 
-app = FastAPI()
-app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+app = FastAPI(title="PodcastHub API")
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, max_age=3600) # 1 hour session timeout
 
 # Create uploads directory
 UPLOAD_DIR = Path("uploads")
@@ -227,8 +219,12 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         if user is None:
             raise HTTPException(status_code=401, detail="User not found")
         return user
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token has expired. Please log in again.")
+    except JWTError as e:
+        raise HTTPException(status_code=401, detail=f"Invalid authentication credentials: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=f"Authentication failed: {str(e)}")
 
 # ==================== AUTH ROUTES ====================
 
@@ -277,7 +273,8 @@ async def google_callback(request: Request):
     import json
     import urllib.parse
     
-    frontend_url = os.environ.get('FRONTEND_URL', DEFAULT_PUBLIC_URL)
+    # For local development, force the frontend URL to localhost:3000
+    frontend_url = "http://localhost:3000" if not os.environ.get('RENDER') else os.environ.get('FRONTEND_URL', "http://localhost:3000")
     
     try:
         token = await oauth.google.authorize_access_token(request)
@@ -312,10 +309,7 @@ async def google_callback(request: Request):
         # Redirect to frontend with error
         error_text = str(e)
         if "SSL handshake failed" in error_text or "TopologyDescription" in error_text:
-            error_text = (
-                "Database connection failed. Check MONGO_ATLAS_URL, Atlas network "
-                "access, and TLS settings in Render."
-            )
+            error_text = "Database connection failed. Please check your MongoDB connection string and network access."
         error_message = urllib.parse.quote(error_text)
         return RedirectResponse(url=f"{frontend_url}/?error={error_message}")
 

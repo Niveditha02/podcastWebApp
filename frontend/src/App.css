@@ -44,6 +44,7 @@
   --primary-foreground: 0 0% 100%;
   --secondary: 189 94% 43%;
   --accent: 259 94% 66%;
+  --text-muted-light: #9ca3af;
 }
 
 body {
@@ -190,8 +191,8 @@ h3 {
   padding: 1rem 2.5rem;
   font-size: 1.125rem;
   font-weight: 600;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  color: white;
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary))) !important;
+  color: white !important;
   border: none;
   border-radius: 12px;
   cursor: pointer;
@@ -579,7 +580,8 @@ h3 {
   background: none;
   border: none;
   border-radius: 12px;
-  color: var(--text-muted-light);
+  color: var(--text-light);
+  opacity: 0.7;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -610,8 +612,9 @@ h3 {
 }
 
 .nav-links button.active {
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
   color: white;
+  opacity: 1;
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
